@@ -5,8 +5,16 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors:{
+        "orange" : "#F93B1D",
+      },
+      fontFamily:{
+        'fira':['FiraGO','sans-serif'],
+      }
+    },
   },
   plugins: [],
 }
+
 
