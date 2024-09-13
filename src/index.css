@@ -1,4 +1,3 @@
-
 @import url('https://free.bboxtype.com/embedfonts/?family=FiraGO:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i');
 
 
@@ -6,3 +5,63 @@
 @tailwind components;
 @tailwind utilities;
 
+.navbar {
+    /* background-color: aqua; */
+    width: Fixed (1920px)px;
+    height: Fixed (100px)px;
+    margin-top: 100px;
+    /* margin-left: 218px; */
+    padding: 38px 162px 38px 162px;
+    gap: 10px;
+    border: 1px 0px 0px 0px;
+    opacity: 0px;
+
+}
+
+.logo {
+    width: 150px;
+    height: 24px;
+    gap: 0px;
+    opacity: 0px;
+
+}
+
+.filternaddbar {
+    width: Fixed (1, 596px)px;
+    height: Hug (47px)px;
+    margin-top: 77px;
+    padding-left: 162px;
+    padding-right: 162px;
+    gap: 0px;
+    justify-content: space-between;
+    opacity: 0px;
+
+}
+
+.filters {
+    width: Hug (785px)px;
+    height: Hug (47px)px;
+    padding: 6px 0px 0px 0px;
+    gap: 24px;
+    border-radius: 10px 0px 0px 0px;
+    border: 1px 0px 0px 0px;
+    opacity: 0px;
+
+}
+
+.addButtons{
+    width: Hug (449px)px;
+    height: Hug (47px)px;
+    gap: 16px;
+    opacity: 0px;
+
+}
+
+.dr-1{
+    width: Hug (116px)px;
+height: Hug (35px)px;
+padding: 8px 14px 8px 14px;
+gap: 4px;
+opacity: 0px;
+
+}
