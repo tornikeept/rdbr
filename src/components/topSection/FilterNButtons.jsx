@@ -1,5 +1,5 @@
 import React from 'react'
-import Filter from './Filter'
+import Filter from './filterBar/Filters'
 import AddButtons from './AddButtons'
 
 function FilterNButtons() {

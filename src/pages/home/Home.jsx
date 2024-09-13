@@ -1,5 +1,6 @@
 import React from 'react'
-import FilterNButtons from '../../components/filterAndAddButtons/FilterNButtons'
+import FilterNButtons from '../../components/topSection/FilterNButtons'
+
 
 function Home() {
   return (
