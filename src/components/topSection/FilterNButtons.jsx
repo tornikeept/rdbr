@@ -1,13 +1,12 @@
 import React from 'react'
-import Filter from './filterBar/Filters'
+import Filters from './filterBar/Filters'
 import AddButtons from './AddButtons'
 
 function FilterNButtons() {
     return (
         <>
             <div className="filternaddbar flex">
-                <Filter/>
-
+                <Filters/>
                 <AddButtons />
             </div>
         </>
