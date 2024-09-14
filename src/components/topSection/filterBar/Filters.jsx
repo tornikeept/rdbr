@@ -11,6 +11,8 @@ const Filters = () => {
   const [rangeValue2, setRangeValue2] = useState({ from: '', to: '' });
   const [numberValue, setNumberValue] = useState(0);
   const [activeButton, setActiveButton] = useState(null);
+  const [rangeError1, setRangeError1] = useState('');
+  const [rangeError2, setRangeError2] = useState('');
 
   const toggleDropdown = (index) => {
     setOpenDropdown(prev => prev === index ? null : index);
@@ -27,16 +29,28 @@ const Filters = () => {
   };
 
   const handleRangeInputChange = (e, type, rangeIndex) => {
+    const value = e.target.value;
+
     if (rangeIndex === 1) {
-      setRangeValue1(prev => ({
-        ...prev,
-        [type]: e.target.value
-      }));
+      setRangeValue1(prev => {
+        const newRange = { ...prev, [type]: value };
+        if (newRange.to && newRange.from && parseInt(newRange.to, 10) < parseInt(newRange.from, 10)) {
+          setRangeError1('გთხოვთ შეიყვანოთ ვალიდური რიცხვები');
+        } else {
+          setRangeError1('');
+        }
+        return newRange;
+      });
     } else {
-      setRangeValue2(prev => ({
-        ...prev,
-        [type]: e.target.value
-      }));
+      setRangeValue2(prev => {
+        const newRange = { ...prev, [type]: value };
+        if (newRange.to && newRange.from && parseInt(newRange.to, 10) < parseInt(newRange.from, 10)) {
+          setRangeError2('გთხოვთ შეიყვანოთ ვალიდური რიცხვები');
+        } else {
+          setRangeError2('');
+        }
+        return newRange;
+      });
     }
   };
 
@@ -44,13 +58,21 @@ const Filters = () => {
     setNumberValue(parseInt(e.target.value, 10));
   };
 
-  const applyFilters = () => {
+  const applyFilters = (dropdownIndex) => {
+    if (dropdownIndex === 1 && rangeError1) {
+      return; // Do not apply filters if there's an error in dropdown 1
+    }
+    if (dropdownIndex === 2 && rangeError2) {
+      return; // Do not apply filters if there's an error in dropdown 2
+    }
+
     console.log('Applying filters:', {
       selectedItems,
       rangeValue1,
       rangeValue2,
       numberValue
     });
+
     setOpenDropdown(null);
   };
 
@@ -66,10 +88,10 @@ const Filters = () => {
     }
   };
 
-  const rangeSuggestions = [
-    [10, 20, 30, 40, 50],  // Min suggestions
-    [60, 70, 80, 90, 100]  // Max suggestions
-  ];
+  const rangeSuggestions = {
+    min: [10, 20, 30, 40, 50], // Min suggestions
+    max: [60, 70, 80, 90, 100] // Max suggestions
+  };
 
   return (
     <div className="filter-section">
@@ -95,15 +117,14 @@ const Filters = () => {
                       <div key={idx} className="checkbox-item">
                         <input
                           type="checkbox"
-                          id={`checkbox-${idx}`}
                           value={option}
                           onChange={handleCheckboxChange}
                           checked={selectedItems.includes(option)}
                         />
-                        <label htmlFor={`checkbox-${idx}`}>{option}</label>
+                        <span onClick={() => handleCheckboxChange({ target: { value: option } })}>{option}</span>
                       </div>
                     ))}
-                    <button onClick={applyFilters} className="apply-button">Apply Filters</button>
+                    <button onClick={() => applyFilters(1)} className="apply-button">Apply Filters</button>
                   </div>
                 )}
 
@@ -126,33 +147,38 @@ const Filters = () => {
                         placeholder="To"
                       />
                     </div>
+                    {rangeError1 && <div className="error-message">{rangeError1}</div>}
                     <div className="range-suggestions">
                       <div className="range-suggestions-titles">
                         <span>Min</span>
                         <span>Max</span>
                       </div>
                       <div className="range-suggestions-list">
-                        {rangeSuggestions[0].map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            className="suggestion-button"
-                            onClick={() => setRangeValue1(prev => ({ ...prev, from: suggestion }))}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                        {rangeSuggestions[1].map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            className="suggestion-button"
-                            onClick={() => setRangeValue1(prev => ({ ...prev, to: suggestion }))}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
+                        <div className="range-suggestions-column">
+                          {rangeSuggestions.min.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              className="suggestion-button"
+                              onClick={() => setRangeValue1(prev => ({ ...prev, from: suggestion }))}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="range-suggestions-column">
+                          {rangeSuggestions.max.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              className="suggestion-button"
+                              onClick={() => setRangeValue1(prev => ({ ...prev, to: suggestion }))}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <button onClick={applyFilters} className="apply-button">Apply Filters</button>
+                    <button onClick={() => applyFilters(1)} className="apply-button">Apply Filters</button>
                   </div>
                 )}
 
@@ -175,33 +201,38 @@ const Filters = () => {
                         placeholder="To"
                       />
                     </div>
+                    {rangeError2 && <div className="error-message">{rangeError2}</div>}
                     <div className="range-suggestions">
-                      <div className="range-suggestions-titles">
+                    <div className="range-suggestions-titles">
                         <span>Min</span>
                         <span>Max</span>
                       </div>
                       <div className="range-suggestions-list">
-                        {rangeSuggestions[0].map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            className="suggestion-button"
-                            onClick={() => setRangeValue2(prev => ({ ...prev, from: suggestion }))}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                        {rangeSuggestions[1].map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            className="suggestion-button"
-                            onClick={() => setRangeValue2(prev => ({ ...prev, to: suggestion }))}
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
+                        <div className="range-suggestions-column">
+                          {rangeSuggestions.min.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              className="suggestion-button"
+                              onClick={() => setRangeValue2(prev => ({ ...prev, from: suggestion }))}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="range-suggestions-column">
+                          {rangeSuggestions.max.map((suggestion, idx) => (
+                            <button
+                              key={idx}
+                              className="suggestion-button"
+                              onClick={() => setRangeValue2(prev => ({ ...prev, to: suggestion }))}
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <button onClick={applyFilters} className="apply-button">Apply Filters</button>
+                    <button onClick={() => applyFilters(2)} className="apply-button">Apply Filters</button>
                   </div>
                 )}
 
@@ -212,7 +243,7 @@ const Filters = () => {
                       value={numberValue}
                       onChange={handleNumberChange}
                     />
-                    <button onClick={applyFilters} className="apply-button">Apply Filters</button>
+                    <button onClick={() => applyFilters(4)} className="apply-button">Apply Filters</button>
                   </div>
                 )}
               </div>
@@ -223,21 +254,21 @@ const Filters = () => {
 
       {/* New bar for selected filters */}
       <div className="selected-filters-bar">
-        {selectedItems.map((item, idx) => (
+        {selectedItems.length > 0 && selectedItems.map((item, idx) => (
           <div key={idx} className="filter-tag">
             {item}
             <button onClick={() => removeFilter('checkbox', item)}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
           </div>
         ))}
 
-        {(rangeValue1.from || rangeValue1.to) && (
+        {(rangeValue1.from || rangeValue1.to) && !rangeError1 && (
           <div className="filter-tag">
             Range1: {rangeValue1.from || 'From'} - {rangeValue1.to || 'To'}
             <button onClick={() => removeFilter('range1')}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
           </div>
         )}
 
-        {(rangeValue2.from || rangeValue2.to) && (
+        {(rangeValue2.from || rangeValue2.to) && !rangeError2 && (
           <div className="filter-tag">
             Range2: {rangeValue2.from || 'From'} - {rangeValue2.to || 'To'}
             <button onClick={() => removeFilter('range2')}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
@@ -249,8 +280,9 @@ const Filters = () => {
             Number: {numberValue}
             <button onClick={() => removeFilter('number')}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
           </div>
-        )}
+        )|| "" }
 
+        {/* Clear All button only if there's something to clear */}
         {(selectedItems.length || rangeValue1.from || rangeValue1.to || rangeValue2.from || rangeValue2.to || numberValue) && (
           <button className="clear-button" onClick={() => {
             setSelectedItems([]);
@@ -267,3 +299,4 @@ const Filters = () => {
 };
 
 export default Filters;
+

@@ -97,10 +97,21 @@
     margin-bottom: 10px;
   }
   
+  .range-suggestions {
+    display: flex;
+  }
+  
+  .range-suggestions-column {
+    flex: 1;
+  }
+  
   .range-suggestions-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns */
-    gap: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .suggestion-button {
+    width: 100%;
   }
   
   .suggestion-button {
@@ -168,4 +179,7 @@
     border-radius: 4px;
     cursor: pointer;
   }
-  
+  .error-message {
+    color: red;
+    margin-top: 10px;
+  }
