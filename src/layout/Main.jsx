@@ -8,7 +8,7 @@ function Main() {
     <>
     <Header />
     <Outlet/>
-    <footer>footer but nothing is here</footer>
+    {/* <footer>footer but nothing is here</footer> */}
     </>
   )
 }

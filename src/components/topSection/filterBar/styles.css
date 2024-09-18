@@ -1,20 +1,103 @@
+.region-dropdown-menu-open {
+  margin-top: 20px;
+  display: flex;
+  position: absolute;
+  width: 731px;
+  height: 284px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  align-items: start;
+  box-sizing: border-box;
+  border:3px solid red ;
+}
+
+.range-dropdown-open {
+  width: 382px;
+  height: 284px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 2px;
+  border:3px solid red ;
+  position: absolute;
+}
+.price-dropdown-open{
+  width: 382px;
+  height: 284px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 2px;
+  border:3px solid red ;
+  position: absolute;
+}
+
+.badroom-dropdown-open{
+  width: 282px;
+  border:3px solid red ;
+}
+
+
+.dropdown-menu-closed {
+  display: none;
+}
+
+
 .filter-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+
+  display: flex;
+
+  gap: 20px;
+}
+
+.dropdown-menu-region-button {
+  flex-direction: column;
+}
+
+.dropdown-menu-price-category-button {
+  flex-direction: column;
   
-  .filter-dropdown-container {
-    display: flex;
-    gap: 10px;
-  }
+}
+
+
+.range-suggestions-list{
+  display: flex;
+  flex-direction: row;
+  gap: 120px;
+}
+
+.range-suggestions-column{
+  display: flex;
+  flex-direction: column;
   
-  .dropdown-wrapper {
-    position: relative;
+}
+.suggestion-button{
+  flex-direction: column;
+}
+
+.button-arrow-wrapper{
+  gap: 2px;
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  align-items: center;
+}
+.selected-filters-bar {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+
+  .error-message{
+    color: red;
+    background-color: aquamarine;
+    
   }
+
   
   .dropdown-button {
-    background-color: #fff; /* Default background color */
+    background-color: #fff; 
     border: 1px solid #ccc;
     cursor: pointer;
     width: 100%;
@@ -25,56 +108,23 @@
     border-radius: 4px;
   }
   
-  .dropdown-button.active {
-    background-color: #F3F3F3; /* Background color when active */
-  }
+
   
-  .arrow-icon {
+  /* .arrow-icon {
     width: 16px;
     height: 16px;
-  }
+  } */
   
-  .dropdown-menu {
+  /* .dropdown-menu {
     border: 1px solid #ccc;
     position: absolute;
     z-index: 10;
     background-color: white;
-  }
+  } */
+   */
+
   
-  .checkbox-dropdown {
-    width: 731px; /* Make sure it fits the width of the dropdown-menu */
-    height: 284px; /* Make sure it fits the height of the dropdown-menu */
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns */
-    gap: 32px; /* Space between items */
-    align-items: start; /* Align items at the start */
-    box-sizing: border-box; /* Include padding in the total width and height */
-  }
-  
-  .checkbox-item {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin-bottom: 5px;
-  }
-  
-  .checkbox-item input[type="checkbox"] {
-    margin-right: 8px;
-  }
-  
-  .range-dropdown {
-    width: 382px;
-    height: 284px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .range-title {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  
+/*   
   .range-inputs {
     display: flex;
     justify-content: space-between;
@@ -90,45 +140,13 @@
     justify-content: space-between;
     flex-direction: column;
   }
+   */
+
+ 
+ 
+
   
-  .range-suggestions-titles {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  
-  .range-suggestions {
-    display: flex;
-  }
-  
-  .range-suggestions-column {
-    flex: 1;
-  }
-  
-  .range-suggestions-list {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .suggestion-button {
-    width: 100%;
-  }
-  
-  .suggestion-button {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: #fff;
-  }
-  
-  .suggestion-button:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .number-dropdown input {
-    width: 282px;
-  }
+
   
   .apply-button {
     width: 77px;
@@ -146,40 +164,4 @@
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-  }
-  
-  .filter-tag {
-    background-color: #e9e9e9;
-    padding: 5px 10px;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .filter-tag button {
-    background: none;
-    border: none;
-    color: red;
-    margin-left: 5px;
-    cursor: pointer;
-  }
-  
-  .cancel-icon {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    margin-left: 5px;
-  }
-  
-  .clear-button {
-    background-color: #F93B1D;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .error-message {
-    color: red;
-    margin-top: 10px;
   }
