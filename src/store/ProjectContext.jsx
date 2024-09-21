@@ -1,21 +1,19 @@
 import React, { createContext, useState, useEffect } from "react";
 import { fetchProducts } from '../services/api';
-// import daisyui from "daisyui";
 
 export const ProjectContext = createContext();
 
 export const ProjectProvider = ({ children }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [checkedCities, setCheckedCities] = useState([]);
+  const [checkedCities, setCheckedCities] = useState({});
   const [priceRange, setPriceRange] = useState({ from: '', to: '' });
   const [areaRange, setAreaRange] = useState({ from: '', to: '' });
-  const[badroomsNumberValue,setBadroomsNumberValue] = useState('');
-  const [rangeError, setRangeError] = useState('');
+  const [badroomsNumberValue, setBadroomsNumberValue] = useState('');
+  const [priceRangeError, setPriceRangeError] = useState('');
+  const [areaRangeError, setAreaRangeError] = useState('');
   const [products, setProducts] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState(null);
-  const [priceRangeError ,setPriceRangeError] = useState('');
-  const [areaRangeError,setAreaRangeError]= useState('');
 
   const fetchProductsData = async () => {
     try {
@@ -32,65 +30,86 @@ export const ProjectProvider = ({ children }) => {
   }, []);
 
   const clearAllFilters = () => {
-    setSelectedItems([]);
-    setRangeValue1({ from: '', to: '' });
-    setRangeValue2({ from: '', to: '' });
-    setNumberValue('');
-    rangeError('');
-    setRangeError('');
-    setFilteredData(products); // Reset to all products
+    // Clear filters from local storage
+    localStorage.removeItem("filters");
+  
+    // Clear state
+    setCheckedCities({});
+    setPriceRange({});
+    setAreaRange({});
+    setBadroomsNumberValue('');
+  
+    // Update context state
+    setCheckedCities({});
+    setPriceRange({});
+    setAreaRange({});
+    setBadroomsNumberValue('');
   };
+  
+  
+  
 
-  const removeFilter = (filterType) => {
+  const removeFilter = (filterType, filterValue) => {
     switch (filterType) {
-      case 'range1':
-        setRangeValue1({ from: '', to: '' });
+      case 'price':
+        setPriceRange({ from: '', to: '' });
         break;
-      case 'range2':
-        setRangeValue2({ from: '', to: '' });
+      case 'area':
+        setAreaRange({ from: '', to: '' });
         break;
-      case 'number':
-        setNumberValue(null);
+      case 'bedrooms':
+        setBadroomsNumberValue('');
+        break;
+      case 'region':
+        setCheckedCities((prev) => {
+          const newCheckedCities = { ...prev };
+          delete newCheckedCities[filterValue]; // Remove the region
+          return newCheckedCities;
+        });
         break;
       default:
         break;
     }
+    // Debugging: Check the state before applying filters
+    console.log('State after removing filter:', {
+      checkedCities,
+      priceRange,
+      areaRange,
+      badroomsNumberValue,
+    });
     applyFilters(); // Reapply filters after removing one
   };
 
   const applyFilters = () => {
-    let newFilteredProducts = [...products]; // Start with all products
-
-    if (priceRange.from && priceRange.to) {
-      if (parseInt(rangeValue1.from, 10) > parseInt(rangeValue1.to, 10)) {
-        setRangeError('Invalid range');
-      } else {
-        setRangeError('');
-        newFilteredProducts = newFilteredProducts.filter(product =>
-          product.rangeValue >= rangeValue1.from && product.rangeValue <= rangeValue1.to
-        );
-      }
-    }
-
-    if (areaRange.from && areaRange.to) {
-      if (parseInt(rangeValue2.from, 10) > parseInt(rangeValue2.to, 10)) {
-        setRangeError('Invalid range');
-      } else {
-        setRangeError('');
-        newFilteredProducts = newFilteredProducts.filter(product =>
-          product.rangeValue >= rangeValue2.from && product.rangeValue <= rangeValue2.to
-        );
-      }
-    }
-
-    if (numberValue !== null) {
-      newFilteredProducts = newFilteredProducts.filter(product =>
-        product.numberValue === numberValue
-      );
-    }
-
-    setFilteredData(newFilteredProducts);
+    // Get the existing filters from localStorage
+    const savedFilters = JSON.parse(localStorage.getItem('filters')) || {};
+  
+    // Create new filters based on current state
+    const newFilters = {
+      cities: checkedCities,
+      priceRange,
+      areaRange,
+      badrooms: badroomsNumberValue,
+    };
+  
+    // Merge the new filters with the existing ones
+    const updatedFilters = { 
+      ...savedFilters, 
+      ...newFilters 
+    };
+  
+    // Update localStorage with merged filters
+    localStorage.setItem('filters', JSON.stringify(updatedFilters));
+  
+    // Optionally update the state
+    setCheckedCities(updatedFilters.cities);
+    setPriceRange(updatedFilters.priceRange);
+    setAreaRange(updatedFilters.areaRange);
+    setBadroomsNumberValue(updatedFilters.badrooms);
   };
+  
+  
+  
 
   return (
     <ProjectContext.Provider
@@ -105,12 +124,10 @@ export const ProjectProvider = ({ children }) => {
         setAreaRange,
         badroomsNumberValue,
         setBadroomsNumberValue,
-        // activeButton,
-        // setActiveButton,
         priceRangeError,
         setPriceRangeError,
         areaRangeError,
-        setAreaRangeError,       
+        setAreaRangeError,
         applyFilters,
         removeFilter,
         clearAllFilters,

@@ -1,0 +1,132 @@
+/* Basic reset for margin and padding */
+* {
+    box-sizing: border-box;
+    /* Ensure consistent box model */
+}
+
+.component-wrapper {
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    height: 100vh;
+    margin: 0;
+
+}
+
+.newlisting-form {
+
+    padding: 20px;
+    /* Padding around the form */
+    width: 790px;
+}
+
+h1 {
+    font-size: 24px;
+    /* Font size for headings */
+    margin-bottom: 16px;
+    /* Space below headings */
+}
+
+.container {
+    margin-bottom: 20px;
+    /* Space below each container */
+}
+
+.location {
+    display: flex;
+    /* Flexbox for layout */
+    flex-wrap: wrap;
+    /* Allow wrapping */
+    gap: 16px;
+    /* Space between items */
+}
+
+.location1 {
+    display: flex;
+}
+
+.location2 {
+    display: flex;
+}
+
+.flat-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.details1 {
+    display: flex;
+}
+
+.details2 {
+    display: flex;
+
+}
+
+
+
+/* .description {
+    width: 790px;
+} */
+
+/* .description input {
+    width: 790px;
+} */
+
+.description input {
+    width: 788px;
+    height: 135px;
+    padding: 10px 0px 0px 0px;
+    gap: 10px;
+    border-radius: 6px 0px 0px 0px;
+    border: 1px 0px 0px 0px;
+    opacity: 0px;
+
+}
+
+.upload-photos{
+    width: 788px;
+    height: 147px;
+}
+
+.upload-photos1  {
+    width: 788px;
+    height: 120px;
+    gap: 0px;
+    border: 1px dashed #2D3648;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.upload-image {
+    
+    z-index: 10;
+    cursor: pointer;
+    width: 24px; 
+    height: 24px; 
+    object-fit: cover;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+} 
+
+
+
+.deal-type {
+    display: flex;
+    /* Flexbox for radio buttons */
+    flex-direction: row;
+    /* Stack vertically */
+    margin-right: 20px;
+    /* Space to the right of radio buttons */
+}
+
+input[type="radio"] {
+    margin-right: 8px;
+    /* Space between radio and label */
+}

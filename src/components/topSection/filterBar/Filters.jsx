@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { ProjectContext } from "../../../store/ProjectContext.jsx";
 import UP_ARROW_ICON from "../../../../public/photos/up.png";
 import DOWN_ARROW_ICON from "../../../../public/photos/down.png";
@@ -12,7 +12,6 @@ const areaSuggestions = { min: [10, 20, 30, 40, 50], max: [50, 100, 150, 250, 30
 // Helper function for range validation
 const validateRange = (from, to, type) => {
   if (to && from && parseInt(to, 10) < parseInt(from, 10)) {
-    console.log('range error detected');
     return type === 'price' ? 'გთხოვთ შეიყვანოთ ვალიდური ფასები' : 'გთხოვთ შეიყვანოთ ვალიდური ფართები'; // Validation error message
   }
   return '';
@@ -30,6 +29,18 @@ const Dropdown = ({ label, isOpen, toggleDropdown, children }) => (
 );
 
 const Filters = () => {
+
+
+  useEffect(() => {
+    const savedFilters = JSON.parse(localStorage.getItem('filters')) || {};
+    setCheckedCities(savedFilters.cities || {});
+    setPriceRange(savedFilters.priceRange || {});
+    setAreaRange(savedFilters.areaRange || {});
+    setBadroomsNumberValue(savedFilters.badrooms || '');
+  }, []);
+  
+  
+  
   const {
     checkedCities = {},
     setCheckedCities,
@@ -39,9 +50,9 @@ const Filters = () => {
     setAreaRange,
     badroomsNumberValue = '',
     setBadroomsNumberValue,
-    priceRangeError = '', // Separate state for price range error
+    priceRangeError = '',
     setPriceRangeError,
-    areaRangeError = '', // Separate state for area range error
+    areaRangeError = '',
     setAreaRangeError,
     applyFilters,
     removeFilter,
@@ -50,6 +61,16 @@ const Filters = () => {
 
   const [openDropdown, setOpenDropdown] = useState(null);
 
+  // Local state for editing filters
+  const [localCheckedCities, setLocalCheckedCities] = useState(checkedCities);
+  const [localPriceRange, setLocalPriceRange] = useState(priceRange);
+  const [localAreaRange, setLocalAreaRange] = useState(areaRange);
+  const [localBadroomsNumber, setLocalBadroomsNumber] = useState(badroomsNumberValue);
+
+  // Local error states
+  const [localPriceRangeError, setLocalPriceRangeError] = useState('');
+  const [localAreaRangeError, setLocalAreaRangeError] = useState('');
+
   // Toggle dropdown menus
   const toggleDropdownMenu = (type) => {
     setOpenDropdown(openDropdown === type ? null : type);
@@ -57,7 +78,7 @@ const Filters = () => {
 
   // Handle checkbox change for regions
   const handleCheckboxChange = (region) => {
-    setCheckedCities((prevState) => ({
+    setLocalCheckedCities((prevState) => ({
       ...prevState,
       [region]: !prevState[region],
     }));
@@ -66,178 +87,252 @@ const Filters = () => {
   // Handle range input change
   const handleRangeInputChange = (e, type, rangeIndex) => {
     const value = e.target.value;
-    const rangeUpdater = rangeIndex === 1 ? setPriceRange : setAreaRange;
-    const errorUpdater = rangeIndex === 1 ? setPriceRangeError : setAreaRangeError;
+    const rangeUpdater = rangeIndex === 1 ? setLocalPriceRange : setLocalAreaRange;
+    const errorUpdater = rangeIndex === 1 ? setLocalPriceRangeError : setLocalAreaRangeError;
     const newRange = { [type]: value };
 
     rangeUpdater((prev) => {
       const updatedRange = { ...prev, ...newRange };
       const errorMessage = validateRange(updatedRange.from, updatedRange.to, rangeIndex === 1 ? 'price' : 'area');
       errorUpdater(errorMessage); // Set the error message
-      // console.log(errorMessage);
       return updatedRange;
     });
   };
 
   const handleNumberChange = (e) => {
-    setBadroomsNumberValue(parseInt(e.target.value, 10) || '');
+    setLocalBadroomsNumber(parseInt(e.target.value, 10) || '');
   };
 
   const handleClickApply = () => {
-    console.log("Applied filters");
+    if (localPriceRangeError === '' && localAreaRangeError === '') {
+      // Update local storage with current local state
+      const filters = {
+        cities: localCheckedCities,
+        priceRange: localPriceRange,
+        areaRange: localAreaRange,
+        badrooms: localBadroomsNumber
+      };
+      localStorage.setItem("filters", JSON.stringify(filters));
+  
+      // Update context state
+      setCheckedCities(localCheckedCities);
+      setPriceRange(localPriceRange);
+      setAreaRange(localAreaRange);
+      setBadroomsNumberValue(localBadroomsNumber);
+  
+      // Close dropdown
+      setOpenDropdown(null);
+    }
   };
+  
+  
+  const handleRemoveFilter = (filterType, filterValue) => {
+    const savedFilters = JSON.parse(localStorage.getItem('filters')) || {};
+  
+    if (filterType === 'region') {
+      setCheckedCities((prev) => {
+        const newCheckedCities = { ...prev };
+        delete newCheckedCities[filterValue];
+        return newCheckedCities;
+      });
+      delete savedFilters.cities[filterValue];
+    } else if (filterType === 'price') {
+      setPriceRange({});
+      delete savedFilters.priceRange;
+    } else if (filterType === 'area') {
+      setAreaRange({});
+      delete savedFilters.areaRange;
+    } else if (filterType === 'bedrooms') {
+      setBadroomsNumberValue('');
+      delete savedFilters.badrooms;
+    }
+  
+    // Update localStorage after removing the filter
+    localStorage.setItem('filters', JSON.stringify(savedFilters));
+  
+    // Update context state with new filters from local storage
+    const updatedFilters = JSON.parse(localStorage.getItem('filters')) || {};
+    setCheckedCities(updatedFilters.cities || {});
+    setPriceRange(updatedFilters.priceRange || {});
+    setAreaRange(updatedFilters.areaRange || {});
+    setBadroomsNumberValue(updatedFilters.badrooms || '');
+  };
+  
+ 
+  
+  
+  
+
 
   return (
     <div className="filter-section">
       {/* Region Dropdown */}
-      <Dropdown
-        label="რეგიონი"
-        isOpen={openDropdown === 'region-category'}
-        toggleDropdown={() => toggleDropdownMenu('region-category')}
-      >
-        <ul className="region-dropdown-menu-open">
-          {regionArray.map((item, index) => (
-            <li key={index} className="flex items-center p-2">
+      <div className="filters">
+        <Dropdown
+          label="რეგიონი"
+          isOpen={openDropdown === 'region-category'}
+          toggleDropdown={() => toggleDropdownMenu('region-category')}
+        >
+          <ul className="region-dropdown-menu-open">
+            {regionArray.map((item, index) => (
+              <li key={index} className="flex items-center p-2">
+                <input
+                  id={`${item}-checkbox`}
+                  type="checkbox"
+                  checked={!!localCheckedCities[item]} // Boolean value to ensure it's true/false
+                  onChange={() => handleCheckboxChange(item)} // Toggle the checked state
+                  className="mr-2"
+                />
+                <label htmlFor={`${item}-checkbox`}>{item}</label>
+              </li>
+            ))}
+            <button className="btn" onClick={handleClickApply}>Apply</button>
+          </ul>
+        </Dropdown>
+
+        {/* Price Category Dropdown */}
+        <Dropdown
+          label="საფასო კატეგორია"
+          isOpen={openDropdown === 'price-category'}
+          toggleDropdown={() => toggleDropdownMenu('price-category')}
+        >
+          <div className="range-dropdown-open">
+            <div className="price-inputs">
+              <p className="bold">ფასის მიხედვით</p>
               <input
-                id={`${item}-checkbox`}
-                type="checkbox"
-                checked={!!checkedCities[item]} // Boolean value to ensure it's true/false
-                onChange={() => handleCheckboxChange(item)} // Toggle the checked state
-                className="mr-2"
+                type="number"
+                placeholder="დან"
+                value={localPriceRange.from || ''}
+                onChange={(e) => handleRangeInputChange(e, "from", 1)}
               />
-              <label htmlFor={`${item}-checkbox`}>{item}</label>
-            </li>
-          ))}
-          <button className="btn" onClick={handleClickApply}>არჩევა</button>
-        </ul>
-      </Dropdown>
+              <input
+                type="number"
+                placeholder="მდე"
+                value={localPriceRange.to || ''}
+                onChange={(e) => handleRangeInputChange(e, "to", 1)}
+              />
+            </div>
+            {localPriceRangeError !== '' && <p className="error-message">{localPriceRangeError}</p>} {/* Display Price Range Error */}
+            <div className="range-suggestions-list">
+              <div className="range-suggestions-column">
+                <p>მინ.ფასი</p>
+                {priceSuggestions.min.map((suggestion, idx) => (
+                  <button key={idx} className="suggestion-button" onClick={() => {
+                    setLocalPriceRange((prev) => ({ ...prev, from: suggestion }));
+                    setLocalPriceRangeError(validateRange(suggestion, localPriceRange.to, 'price')); // Validate on suggestion click
+                  }}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+              <div className="range-suggestions-column">
+                <p>მაქს.ფასი</p>
+                {priceSuggestions.max.map((suggestion, idx) => (
+                  <button key={idx} className="suggestion-button" onClick={() => {
 
-      {/* Price Category Dropdown */}
-      <Dropdown
-        label="საფასო კატეგორია"
-        isOpen={openDropdown === 'price-category'}
-        toggleDropdown={() => toggleDropdownMenu('price-category')}
-      >
-        <div className="range-dropdown-open">
-          <div className="price-inputs">
-            <p className="bold">ფასის მიხედვით</p>
+                    setLocalPriceRange((prev) => ({ ...prev, to: suggestion }));
+                    setLocalPriceRangeError(validateRange(localPriceRange.from, suggestion, 'price')); // Validate on suggestion click
+                  }}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="btn" onClick={handleClickApply}>Apply</button>
+          </div>
+        </Dropdown>
+
+        {/* Area Category Dropdown */}
+        <Dropdown
+          label="ფართობის კატეგორია"
+          isOpen={openDropdown === 'area-category'}
+          toggleDropdown={() => toggleDropdownMenu('area-category')}
+        >
+          <div className="range-dropdown-open">
+            <div className="area-inputs">
+              <p className="bold">ფართობის მიხედვით</p>
+              <input
+                type="number"
+                placeholder="დან"
+                value={localAreaRange.from || ''}
+                onChange={(e) => handleRangeInputChange(e, "from", 2)}
+              />
+              <input
+                type="number"
+                placeholder="მდე"
+                value={localAreaRange.to || ''}
+                onChange={(e) => handleRangeInputChange(e, "to", 2)}
+              />
+            </div>
+            {localAreaRangeError !== '' && <p className="error-message">{localAreaRangeError}</p>} {/* Display Area Range Error */}
+            <div className="range-suggestions-list">
+              <div className="range-suggestions-column">
+                <p>მინ.მ²</p>
+                {areaSuggestions.min.map((suggestion, idx) => (
+                  <button key={idx} className="suggestion-button" onClick={() => {
+                    setLocalAreaRange((prev) => ({ ...prev, from: suggestion }));
+                    setLocalAreaRangeError(validateRange(suggestion, localAreaRange.to, 'area')); // Validate on suggestion click
+                  }}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+              <div className="range-suggestions-column">
+                <p>მაქს.მ²</p>
+                {areaSuggestions.max.map((suggestion, idx) => (
+                  <button key={idx} className="suggestion-button" onClick={() => {
+                    setLocalAreaRange((prev) => ({ ...prev, to: suggestion }));
+                    setLocalAreaRangeError(validateRange(localAreaRange.from, suggestion, 'area')); // Validate on suggestion click
+                  }}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="btn" onClick={handleClickApply}>Apply</button>
+          </div>
+        </Dropdown>
+
+        {/* Bedroom Category Dropdown */}
+        <Dropdown
+          label="საძინებლების რაოდენობა"
+          isOpen={openDropdown === 'bedroom-category'}
+          toggleDropdown={() => toggleDropdownMenu('bedroom-category')}
+        >
+          <div className="bedroom-inputs">
             <input
               type="number"
-              placeholder="დან"
-              value={priceRange.from || ''}
-              onChange={(e) => handleRangeInputChange(e, "from", 1)}
+              placeholder="რაოდენობა"
+              value={localBadroomsNumber || ''}
+              onChange={handleNumberChange}
             />
-            <input
-              type="number"
-              placeholder="მდე"
-              value={priceRange.to || ''}
-              onChange={(e) => handleRangeInputChange(e, "to", 1)}
-            />
+            <button className="btn" onClick={() => {
+              // Only apply if there are no errors
+              if (localPriceRangeError === '' && localAreaRangeError === '') {
+                setBadroomsNumberValue(localBadroomsNumber);
+                setOpenDropdown(null); // Close dropdown
+                applyFilters(); // Ensure filters are applied
+              }
+            }}>Apply</button>
           </div>
-          {priceRangeError !== '' && <p className="error-message">{priceRangeError}</p>} {/* Display Price Range Error */}
-          <div className="range-suggestions-list">
-            <div className="range-suggestions-column">
-              <p>მინ.ფასი</p>
-              {priceSuggestions.min.map((suggestion, idx) => (
-                <button key={idx} className="suggestion-button" onClick={() => setPriceRange((prev) => ({ ...prev, from: suggestion }))}>
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-            <div className="range-suggestions-column">
-              <p>მაქს.ფასი</p>
-              {priceSuggestions.max.map((suggestion, idx) => (
-                <button key={idx} className="suggestion-button" onClick={() => setPriceRange((prev) => ({ ...prev, to: suggestion }))}>
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button className="btn" onClick={handleClickApply}>არჩევა</button>
-        </div>
-      </Dropdown>
-
-      {/* Area Category Dropdown */}
-      <Dropdown
-        label="ფართობის კატეგორია"
-        isOpen={openDropdown === 'area-category'}
-        toggleDropdown={() => toggleDropdownMenu('area-category')}
-      >
-        <div className="range-dropdown-open">
-          <div className="area-inputs">
-            <p className="bold">ფართობის მიხედვით</p>
-            <input
-              type="number"
-              placeholder="დან"
-              value={areaRange.from || ''}
-              onChange={(e) => handleRangeInputChange(e, "from", 2)}
-            />
-            <input
-              type="number"
-              placeholder="მდე"
-              value={areaRange.to || ''}
-              onChange={(e) => handleRangeInputChange(e, "to", 2)}
-            />
-          </div>
-          {areaRangeError !== '' && <p className="error-message">{areaRangeError}</p>} {/* Display Area Range Error */}
-          <div className="range-suggestions-list">
-            <div className="range-suggestions-column">
-              <p>მინ.მ²</p>
-              {areaSuggestions.min.map((suggestion, idx) => (
-                <button key={idx} className="suggestion-button" onClick={() => setAreaRange((prev) => ({ ...prev, from: suggestion }))}>
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-            <div className="range-suggestions-column">
-              <p>მაქს.მ²</p>
-              {areaSuggestions.max.map((suggestion, idx) => (
-                <button key={idx} className="suggestion-button" onClick={() => setAreaRange((prev) => ({ ...prev, to: suggestion }))}>
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button className="btn" onClick={handleClickApply}>არჩევა</button>
-        </div>
-      </Dropdown>
-
-            {/* Bedroom Category Dropdown */}
-            <Dropdown
-        label="საძინებლების რაოდენობა"
-        isOpen={openDropdown === 'bedroom-category'}
-        toggleDropdown={() => toggleDropdownMenu('bedroom-category')}
-      >
-        <div className="bedroom-inputs">
-          <input
-            type="number"
-            placeholder="რაოდენობა"
-            value={badroomsNumberValue || ''}
-            onChange={handleNumberChange}
-          />
-          <button className="btn" onClick={handleClickApply}>არჩევა</button>
-        </div>
-      </Dropdown>
-
-      {/* Clear All Filters Button */}
-      <button className="btn clear-all-button" onClick={clearAllFilters}>
-        ყველა ფილტრის გაწვდვა
-      </button>
+        </Dropdown>
+      </div>
 
       {/* Applied Filters Display */}
       <div className="applied-filters">
         {Object.keys(checkedCities).filter(region => checkedCities[region]).map(region => (
           <div key={region} className="filter-item">
             {region}
-            <button onClick={() => removeFilter(region)} className="remove-filter-btn">
+            <button onClick={() => handleRemoveFilter('region', region)}>
               <img src={CANCEL_ICON} alt="Remove filter" />
             </button>
           </div>
         ))}
+
         {priceRange.from && priceRange.to && (
           <div className="filter-item">
             ფასის: {priceRange.from} - {priceRange.to}
-            <button onClick={() => removeFilter('price')} className="remove-filter-btn">
+            <button onClick={() => handleRemoveFilter('price')}>
               <img src={CANCEL_ICON} alt="Remove filter" />
             </button>
           </div>
@@ -245,7 +340,7 @@ const Filters = () => {
         {areaRange.from && areaRange.to && (
           <div className="filter-item">
             ფართობის: {areaRange.from} - {areaRange.to}
-            <button onClick={() => removeFilter('area')} className="remove-filter-btn">
+            <button onClick={() => handleRemoveFilter('area')}>
               <img src={CANCEL_ICON} alt="Remove filter" />
             </button>
           </div>
@@ -253,337 +348,19 @@ const Filters = () => {
         {badroomsNumberValue && (
           <div className="filter-item">
             ძინებლების რაოდენობა: {badroomsNumberValue}
-            <button onClick={() => removeFilter('bedrooms')} className="remove-filter-btn">
+            <button onClick={() => handleRemoveFilter('bedrooms')}>
               <img src={CANCEL_ICON} alt="Remove filter" />
             </button>
           </div>
         )}
+
+        {/* Clear All Filters Button */}
+        <button className="btn clear-all-button" onClick={clearAllFilters}>
+          გასუფთავება
+        </button>
       </div>
     </div>
   );
 };
 
 export default Filters;
-
-
-
-// import React, { useContext, useState } from "react";
-// import { ProjectContext } from "../../../store/ProjectContext.jsx";
-// import UP_ARROW_ICON from "../../../../public/photos/up.png";
-// import DOWN_ARROW_ICON from "../../../../public/photos/down.png";
-// import CANCEL_ICON from '../../../../public/photos/x.png';
-// import './styles.css';
-
-
-
-// const regionArray = ["ქართლი", "კახეთი", "იმერეთი", "სამეგრელო", "გურია", "რაჭა", "ლეჩხუმი", "სამცხე-ჯავახეთი", "აჭარა", "სვანეთი", "მცხეთა-მთიანეთი", "თბილისი"]
-// const priceSuggestions = {
-//   min: [10, 20, 30, 40, 50],
-//   max: [60, 70, 80, 90, 100]
-// }
-
-// const areaSuggestions = {
-//   min: [10, 20, 30, 40, 50],
-//   max: [50, 100, 150, 250, 300]
-// }
-
-
-
-// function Filters() {
-
-
-//   const {
-//     checkedCities = [],
-//     setCheckedCities,
-//     priceRange = {},
-//     setPriceRange,
-//     areaRange = {},
-//     setAreaRange,
-//     badroomsNumberValue = '',
-//     setBadroomsNumberValue,
-//     // activeButton,
-//     // setActiveButton,
-//     RangeError = '',
-//     setRangeError,
-//     applyFilters,
-//     removeFilter,
-//     clearAllFilters,
-//   } = useContext(ProjectContext);
-
-
-
-//   const [displayRegionDropdownMenu, setDisplayRegionDropdownMenu] = useState(false);
-//   const [displayPriceRangeDropdownMenu, setDisplayPriceRangeDropdownMenu] = useState(false);
-//   const [displayAreaRangeDropdownMenu, setDisplayAreaRangeDropdownMenu] = useState(false);
-//   const [displaybadroomDropdownMenu, setDisplaybadroomDropdownMenu] = useState(false);
-
-
-
-
-//   const handleClickDropDownButton = (type) => {
-//     if (type === 'region-category') {
-//       setDisplayRegionDropdownMenu(!displayRegionDropdownMenu);
-//       setDisplayPriceRangeDropdownMenu(false);
-//       setDisplayAreaRangeDropdownMenu(false);
-//       setDisplaybadroomDropdownMenu(false); // Close bedroom dropdown
-//     } else if (type === 'price-category') {
-//       setDisplayPriceRangeDropdownMenu(!displayPriceRangeDropdownMenu);
-//       setDisplayRegionDropdownMenu(false);
-//       setDisplayAreaRangeDropdownMenu(false);
-//       setDisplaybadroomDropdownMenu(false); // Close bedroom dropdown
-//     } else if (type === 'area-category') {
-//       setDisplayAreaRangeDropdownMenu(!displayAreaRangeDropdownMenu);
-//       setDisplayRegionDropdownMenu(false);
-//       setDisplayPriceRangeDropdownMenu(false);
-//       setDisplaybadroomDropdownMenu(false); // Close bedroom dropdown
-//     } else if (type === 'badroom-category') {
-//       setDisplaybadroomDropdownMenu(!displaybadroomDropdownMenu);
-//       setDisplayRegionDropdownMenu(false);
-//       setDisplayPriceRangeDropdownMenu(false);
-//       setDisplayAreaRangeDropdownMenu(false);
-//     }
-//   };
-
-//   const handleCheckboxChange = (region) => {
-//     setCheckedCities(prevState => ({
-//       ...prevState,
-//       [region]: !prevState[region]
-//     }));
-//     console.log(checkedCities);
-//   };
-
-//   const handleRangeInputChange = (e, type, rangeIndex) => {
-//     const value = e.target.value;
-
-//     if (rangeIndex === 1) {
-//       setPriceRange(prev => {
-//         const newRange = { ...prev, [type]: value };
-//         if (newRange.to && newRange.from && parseInt(newRange.to, 10) < parseInt(newRange.from, 10)) {
-//           setRangeError('გთხოვთ შეიყვანოთ ვალიდური რიცხვები');
-//         } else {
-//           setRangeError('');
-//         }
-//         return newRange;
-//       });
-//     }
-//     else {
-//       setAreaRange(prev => {
-//         const newRange = { ...prev, [type]: value };
-//         if (newRange.to && newRange.from && parseInt(newRange.to, 10) < parseInt(newRange.from, 10)) {
-//           setRangeError('გთხოვთ შეიყვანოთ ვალიდური რიცხვები');
-//         } else {
-//           setRangeError('');
-//         }
-//         return newRange;
-//       });
-//     }
-//   };
-
-//   const handleNumberChange = (e) => {
-//     setBadroomsNumberValue(parseInt(e.target.value, 10) || '');
-//   };
-
-//   const handleClickApply = () => {
-//     console.log("Applied filters");
-//   };
-
-//   // const clearAllFilters = () => {
-//   //   setSelectedItems([]);
-//   //   setPriceRange({ from: '', to: '' });
-//   //   setAreaRange ({ from: '', to: '' });
-//   //   setNumberValue(null);
-//   //   setRangeError('');
-//   //   setFilteredProducts(products); // Reset to all products
-//   // };
-
-//   return (
-//     <div className="filter-section">
-//       {/* Region Dropdown */}
-//       <div className="dropdown-menu-region-button">
-//       <div className="button-arrow-wrapper">
-//           <button onClick={() => handleClickDropDownButton('region-category')}>რეგიონი</button>
-//           <img
-//             src={displayRegionDropdownMenu ? UP_ARROW_ICON : DOWN_ARROW_ICON}
-//             alt={displayRegionDropdownMenu ? "Collapse" : "Expand"}
-//             className="arrow-icon size-4"
-//           />
-//         </div>
-
-//         {displayRegionDropdownMenu && (
-//           <ul className="region-dropdown-menu-open" onClick={(e) => e.stopPropagation()}>
-//             {regionArray.map((item, index) => (
-//               <li key={index} className="flex items-center p-2">
-//                 <input
-//                   id={`${item}-checkbox`}
-//                   type="checkbox"
-//                   checked={!!checkedCities[item]} // Boolean value to ensure it's true/false
-//                   onChange={() => handleCheckboxChange(item)} // Toggle the checked state
-//                   className="mr-2"
-//                 />
-//                 <label htmlFor={`${item}-checkbox`}>{item}</label>
-//               </li>
-//             ))}
-//             <button className="btn" onClick={handleClickApply}>არჩევა</button>
-//           </ul>
-//         )}
-//       </div>
-
-//       {/* Price Category Dropdown */}
-//       <div className="dropdown-menu-price-category-button">
-//         <div className="button-arrow-wrapper">
-//           <button onClick={() => handleClickDropDownButton('price-category')}>საფასო კატეგორია</button>
-//           <img
-//             src={displayPriceRangeDropdownMenu ? UP_ARROW_ICON : DOWN_ARROW_ICON}
-//             alt={displayPriceRangeDropdownMenu ? "Collapse" : "Expand"}
-//             className="arrow-icon size-4"
-//           />
-//         </div>
-//         {displayPriceRangeDropdownMenu && (
-//           <div className="range-dropdown-open" onClick={(e) => e.stopPropagation()}>
-//             <div className="price-inputs">
-//               <p className="bold">ფასის მიხედვით</p>
-//               <input type="number" placeholder="დან" value={priceRange.from || ''}
-//                 onChange={(e) => handleRangeInputChange(e, "from", 1)}
-//               />
-//               <input type="number" placeholder="მდე" value={priceRange.to || ''}
-//                 onChange={(e) => handleRangeInputChange(e, "to", 1)}
-//               />
-//             </div>
-//             <div className="range-suggestions-list">
-//               <div className="range-suggestions-column">
-//                 <p>მინ.ფასი</p>
-//                 {priceSuggestions.min.map((suggestion, idx) => (
-//                   <button
-//                     key={idx}
-//                     className="suggestion-button"
-//                     onClick={() => setPriceRange(prev => ({ ...prev, from: suggestion }))}>
-//                     {suggestion}
-//                   </button>
-//                 ))}
-//               </div>
-//               <div className="range-suggestions-column">
-//                 <p>მაქს.ფასი</p>
-//                 {priceSuggestions.max.map((suggestion, idx) => (
-//                   <button
-//                     key={idx}
-//                     className="suggestion-button"
-//                     onClick={() => setPriceRange(prev => ({ ...prev, to: suggestion }))}>
-//                     {suggestion}
-//                   </button>
-//                 ))}
-//               </div>
-//             </div>
-
-//             <button className="btn" onClick={handleClickApply}>არჩევა</button>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* area */}
-//       <div className="dropdown-menu-area-category-button">
-//         <div className="button-arrow-wrapper">
-//           <button onClick={() => handleClickDropDownButton('area-category')}>საფასო კატეგორია</button>
-//           <img
-//             src={displayAreaRangeDropdownMenu ? UP_ARROW_ICON : DOWN_ARROW_ICON}
-//             alt={displayAreaRangeDropdownMenu ? "Collapse" : "Expand"}
-//             className="arrow-icon size-4"
-//           />
-//         </div>
-
-//         {displayAreaRangeDropdownMenu && (
-//           <div className="range-dropdown-open" onClick={(e) => e.stopPropagation()}>
-//             <div className="area-inputs">
-//               <p className="bold">ფასის მიხედვით</p>
-//               <input type="number" placeholder="დან" value={areaRange.from || ''}
-//                 onChange={(e) => handleRangeInputChange(e, "from", 2)}
-//               />
-//               <input type="number" placeholder="მდე" value={areaRange.to || ''}
-//                 onChange={(e) => handleRangeInputChange(e, "to", 2)}
-//               />
-//             </div>
-//             <div className="range-suggestions-list">
-//               <div className="range-suggestions-column">
-//                 <p>მინ.მ²</p>
-//                 {areaSuggestions.min.map((suggestion, idx) => (
-//                   <button
-//                     key={idx}
-//                     className="suggestion-button"
-//                     onClick={() => setAreaRange(prev => ({ ...prev, from: suggestion }))}>
-//                     {suggestion}
-//                   </button>
-//                 ))}
-//               </div>
-//               <div className="range-suggestions-column">
-//                 <p>მაქს.მ</p>
-//                 {areaSuggestions.max.map((suggestion, idx) => (
-//                   <button
-//                     key={idx}
-//                     className="suggestion-button"
-//                     onClick={() => setAreaRange(prev => ({ ...prev, to: suggestion }))}>
-//                     {suggestion}
-//                   </button>
-//                 ))}
-//               </div>
-//             </div>
-
-//             <button className="btn" onClick={handleClickApply}>არჩევა</button>
-//           </div>
-//         )}
-//       </div>
-
-//       <div className="dropdown-menu-badroom-categort-button">
-//         <div className="button-arrow-wrapper">
-//           <button onClick={() => handleClickDropDownButton('badroom-category')}>საიძნებლების რაოდენობა</button>
-//           <img
-//             src={displaybadroomDropdownMenu ? UP_ARROW_ICON : DOWN_ARROW_ICON}
-//             alt={displaybadroomDropdownMenu ? "Collapse" : "Expand"}
-//             className="arrow-icon size-4 "
-//           />
-//         </div>
-
-//         {displaybadroomDropdownMenu && (
-//           <div className="range-dropdown-open" onClick={(e) => e.stopPropagation()}>
-//             <p>საძინებლების რაოდენობა</p>
-//             <input type="number" onChange={handleNumberChange} value={badroomsNumberValue} />
-
-//             <button className="btn" onClick={handleClickApply}>არჩევა</button>
-//           </div>
-//         )}
-//       </div>
-
-
-//       <div className="selected-filters-bar">
-//         {(checkedCities.length > 0 || priceRange.from || areaRange.from || badroomsNumberValue !== '') && (
-//           <button onClick={clearAllFilters} className="clear-all-button">
-//             Clear All
-//           </button>
-//         )}
-//         {(priceRange.from || priceRange.to) && !RangeError && (
-//           <div className="filter-tag">
-//             {priceRange.from} Lar - {priceRange.to || 'To'} lari
-//             <button onClick={() => removeFilter('range1')}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
-//           </div>
-//         )}
-
-//         {(areaRange.from || areaRange.to) && !RangeError && (
-//           <div className="filter-tag">
-//             {areaRange.from} m2 - {areaRange.to || 'To'} m2
-//             <button onClick={() => removeFilter('range2')}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
-//           </div>
-//         )}
-
-//         {badroomsNumberValue !== '' && (
-//           <div className="filter-tag">
-//             otaxebis raodenoba{badroomsNumberValue}
-//             <button onClick={() => removeFilter('number')}><img src={CANCEL_ICON} alt="Cancel" className="cancel-icon" /></button>
-//           </div>
-//         )}
-//       </div>
-
-
-
-//     </div>
-//   );
-// };
-// export default Filters;
-

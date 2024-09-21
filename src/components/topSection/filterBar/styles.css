@@ -1,3 +1,24 @@
+.filter-section{
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+}
+.filters{
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+.applied-filters{
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+.dropdown-content{
+  position:absolute;
+  z-index: 10;
+  background-color: white;
+}
 .region-dropdown-menu-open {
   margin-top: 20px;
   display: flex;
@@ -31,9 +52,10 @@
   position: absolute;
 }
 
-.badroom-dropdown-open{
+.bedroom-category{
   width: 282px;
   border:3px solid red ;
+  position: absolute;
 }
 
 
@@ -42,12 +64,6 @@
 }
 
 
-.filter-section {
-
-  display: flex;
-
-  gap: 20px;
-}
 
 .dropdown-menu-region-button {
   flex-direction: column;
