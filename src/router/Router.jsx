@@ -4,7 +4,7 @@ import Home from "../pages/home/Home";
 import NewListing from "../pages/newListing/NewListing";
 const router = createBrowserRouter([
     {
-      path: "https://tornikeept.github.io/rdbr/",
+      path: "/",
       element: <Main />,
       children:[
         {
@@ -13,7 +13,7 @@ const router = createBrowserRouter([
         },
         {
           path:'/new-listing',
-          element: <NewListing/>
+          element: <NewListing />
         }
       ]
     },
