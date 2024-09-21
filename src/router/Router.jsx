@@ -8,11 +8,11 @@ const router = createBrowserRouter([
       element: <Main />,
       children:[
         {
-            path:"/",
+            path:"https://tornikeept.github.io/rdbr/",
             element: <Home/>
         },
         {
-          path:'/new-listing',
+          path:'https://tornikeept.github.io/rdbr//new-listing',
           element: <NewListing/>
         }
       ]
