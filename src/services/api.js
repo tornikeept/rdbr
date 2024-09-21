@@ -1,3 +1,8 @@
+import { db, storage } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+
 const API_BASE_URL = 'https://api.real-estate-manager.redberryinternship.ge/api';
 const token = '9d0468c7-4ad9-4a20-9fdb-f1c582334721';
 
@@ -26,19 +31,50 @@ export const fetchProducts = async () => {
   }
 };
 
+export const uploadListing = async (data) => {
+  try {
+    // Upload image to Firebase Storage
+    const storageRef = ref(storage, `images/${data.image.name}_${Date.now()}`);
+    await uploadBytes(storageRef, data.image);
+    const imageUrl = await getDownloadURL(storageRef);
 
-export const uploadListing = async (formData) => {
-  const response = await fetch('http://localhost:3001/listings', {
-      method: 'POST',
-      body: formData
-  });
+    // Add listing to Firestore
+    const listingsCollection = collection(db, 'listings');
+    await addDoc(listingsCollection, {
+      is_rental: data.is_rental,
+      address: data.address,
+      zip_code: data.zip_code,
+      region_id: data.region_id,
+      city_id: data.city_id,
+      price: data.price,
+      area: data.area,
+      bedrooms: data.bedrooms,
+      description: data.description,
+      image_url: imageUrl,
+      agent_id: data.agent_id,
+      created_at: new Date()
+    });
 
-  if (!response.ok) {
-      throw new Error('Failed to upload listing');
+    return { message: 'Listing added successfully!' };
+  } catch (error) {
+    console.error('Error uploading listing:', error);
+    throw error;
   }
-
-  return await response.json();
 };
+
+
+// export const uploadListing = async (formData) => {
+//   const response = await fetch('http://localhost:3001/listings', {
+//       method: 'POST',
+//       body: formData
+//   });
+
+//   if (!response.ok) {
+//       throw new Error('Failed to upload listing');
+//   }
+
+//   return await response.json();
+// };
 
 
 // Upload listing with Bearer token

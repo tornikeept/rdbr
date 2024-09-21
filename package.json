@@ -1,18 +1,19 @@
 {
-  "homepage":"https://tornikeept.github.io/rdbr/",
+  "homepage": "https://tornikeept.github.io/rdbr/",
   "name": "real-estate-manager-project",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "predeploy":"npm run build",
-    "deploy":"gh-pages -d build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "firebase": "^10.13.2",
     "json-server": "^1.0.0-beta.2",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.4",
