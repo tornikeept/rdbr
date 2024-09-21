@@ -4,15 +4,15 @@ import Home from "../pages/home/Home";
 import NewListing from "../pages/newListing/NewListing";
 const router = createBrowserRouter([
     {
-      path: "/",
+      path: "https://tornikeept.github.io/rdbr/",
       element: <Main />,
       children:[
         {
-            path:"https://tornikeept.github.io/rdbr/",
+            path:"/",
             element: <Home/>
         },
         {
-          path:'https://tornikeept.github.io/rdbr//new-listing',
+          path:'/new-listing',
           element: <NewListing/>
         }
       ]
